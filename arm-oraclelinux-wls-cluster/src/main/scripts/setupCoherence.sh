@@ -716,6 +716,8 @@ fi
 validateInput
 cleanup
 
+storeCustomSSLCerts
+
 if [ "$wlsServerName" == "${wlsAdminServerName}" ]; then
     createCoherenceCluster
     restartManagedServers
@@ -724,7 +726,6 @@ else
     mountFileShare
     openManagedServerPorts
     createManagedSetup
-    storeCustomSSLCerts
     createNodeManagerService
     enabledAndStartNodeManagerService
     startManagedServer
