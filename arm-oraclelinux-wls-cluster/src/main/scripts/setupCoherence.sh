@@ -206,7 +206,7 @@ EOF
 
         if [ "${isCustomSSLEnabled}" == "true" ];
         then
-cat <<EOF>>$DOMAIN_PATH/managed-domain.yaml
+cat <<EOF>>$wlsDomainPath/managed-domain.yaml
            KeyStores: 'CustomIdentityAndCustomTrust'
            CustomIdentityKeyStoreFileName: "$customIdentityKeyStoreFileName"
            CustomIdentityKeyStoreType: "$customIdentityKeyStoreType"
@@ -217,7 +217,7 @@ cat <<EOF>>$DOMAIN_PATH/managed-domain.yaml
 EOF
         fi
 
-cat <<EOF>>$DOMAIN_PATH/managed-domain.yaml
+cat <<EOF>>$wlsDomainPath/managed-domain.yaml
            SSL:
                 HostnameVerificationIgnored: true
                 HostnameVerifier: 'None'
@@ -225,13 +225,13 @@ EOF
 
         if [ "${isCustomSSLEnabled}" == "true" ];
         then
-cat <<EOF>>$DOMAIN_PATH/managed-domain.yaml
+cat <<EOF>>$wlsDomainPath/managed-domain.yaml
                 ServerPrivateKeyAlias: "$serverPrivateKeyAlias"
                 ServerPrivateKeyPassPhraseEncrypted: "$serverPrivateKeyPassPhrase"
 EOF
         fi
 
-cat <<EOF >>$DOMAIN_PATH/managed-domain.yaml
+cat <<EOF >>$wlsDomainPath/managed-domain.yaml
    SecurityConfiguration:
        NodeManagerUsername: "$wlsUserName"
        NodeManagerPasswordEncrypted: "$wlsPassword" 
