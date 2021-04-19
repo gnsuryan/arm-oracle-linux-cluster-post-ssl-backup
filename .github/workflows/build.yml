@@ -887,6 +887,18 @@ jobs:
         id: verify-deleted-nodes
         run: |
           mspVM2=$(az resource list -g ${resourceGroup} --resource-type Microsoft.Compute/virtualMachines --name ${{ env.managedServerPrefix }}VM2 --query [0].name -o tsv)
+          count=0
+          while [[ -n "$mspVM2" && $count -lt 10 ]];
+          do
+            echo "waiting for $mspVM2 deleted..."
+            sleep 1m
+            count=$((count+1))
+            mspVM2=$(az resource list -g ${resourceGroup} --resource-type Microsoft.Compute/virtualMachines --name ${{ env.managedServerPrefix }}VM2 --query [0].name -o tsv)
+            if [ -z "$mspVM2" ]; then
+              break;
+            fi
+          done
+
           if [ -n "$mspVM2" ]; then
             echo "Delete-node failure: machine ${{ env.managedServerPrefix }}VM2 is not removed."
             exit 1
