@@ -692,30 +692,32 @@ function storeCustomSSLCerts()
 
 function startTestServerAndValidateKeyStore()
 {
-
-   export CERTVALIDATOR_JAR_DOWNLOAD_URL="https://github.com/gnsuryan/arm-oraclelinux-wls/raw/develop/lib/certvalidator.jar"
-
-   mkdir -p ${CERT_VALIDATOR_TEMP_PATH}
-   sudo chown -R $username:$groupname $CERT_VALIDATOR_TEMP_PATH
-
-   cd ${CERT_VALIDATOR_TEMP_PATH}
-
-   wget -q -nv $CERTVALIDATOR_JAR_DOWNLOAD_URL
-
-   if [ ! -f ${CERT_VALIDATOR_TEMP_PATH}/certvalidator.jar ];
+   if [ $wlsServerName == "admin" ];
    then
-        echo_stderr "Error!! Failed to download certvalidator.jar "
-        exit 1
-   fi
+       export CERTVALIDATOR_JAR_DOWNLOAD_URL="https://github.com/gnsuryan/arm-oraclelinux-wls/raw/develop/lib/certvalidator.jar"
 
-   runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java -jar ${CERT_VALIDATOR_TEMP_PATH}/certvalidator.jar $customIdentityKeyStoreType $customIdentityKeyStoreFileName $customIdentityKeyStorePassPhrase $serverPrivateKeyPassPhrase $customTrustKeyStoreType $customTrustKeyStoreFileName $customTrustKeyStorePassPhrase $customTrustKeyStorePassPhrase"
+       mkdir -p ${CERT_VALIDATOR_TEMP_PATH}
+       sudo chown -R $username:$groupname $CERT_VALIDATOR_TEMP_PATH
 
-   if [ $? != 0 ];
-   then
-       echo_stderr "Error!! SSL Certificate/KeyStore validation Failed when used while starting test Server"
-       exit 1
-   else
-       echo "Success !! SSL Certificate/KeyStore validation is successfull when used with test Server"
+       cd ${CERT_VALIDATOR_TEMP_PATH}
+
+       wget -q -nv $CERTVALIDATOR_JAR_DOWNLOAD_URL
+
+       if [ ! -f ${CERT_VALIDATOR_TEMP_PATH}/certvalidator.jar ];
+       then
+            echo_stderr "Error!! Failed to download certvalidator.jar "
+            exit 1
+       fi
+
+       runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java -jar ${CERT_VALIDATOR_TEMP_PATH}/certvalidator.jar $customIdentityKeyStoreType $customIdentityKeyStoreFileName $customIdentityKeyStorePassPhrase $serverPrivateKeyPassPhrase $customTrustKeyStoreType $customTrustKeyStoreFileName $customTrustKeyStorePassPhrase $customTrustKeyStorePassPhrase"
+
+       if [ $? != 0 ];
+       then
+           echo_stderr "Error!! SSL Certificate/KeyStore validation Failed when used while starting test Server"
+           exit 1
+       else
+           echo "Success !! SSL Certificate/KeyStore validation is successfull when used with test Server"
+       fi
    fi
 }
 
