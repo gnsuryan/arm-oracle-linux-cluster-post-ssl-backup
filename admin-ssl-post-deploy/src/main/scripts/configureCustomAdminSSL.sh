@@ -338,24 +338,19 @@ for server in servers:
     if(server.getName() == '${managedServerVMName}' ):
         bean="/ServerLifeCycleRuntimes/"+server.getName()
         serverbean=getMBean(bean)
-        if (serverbean.getState() in ("RUNNING")):
-            try:
-                print "Stop the Server ",server.getName()
-                shutdown(server.getName(),server.getType(),ignoreSessions='true',force='true')
-                print "Start the Server ",server.getName()
-                start(server.getName(),server.getType())
-            except:
-                print "Failed restarting managed server ", server.getName()
-                dumpStack()
+        try:
+            print "Stop the Server ",server.getName()
+            shutdown(server.getName(),server.getType(),ignoreSessions='true',force='true')
+        except:
+            print "Failed to stop the  managed server ", server.getName()
+            dumpStack()
 
-        if (serverbean.getState() in ("SHUTDOWN")):
-            try:
-                print "Server is already shutdown ",server.getName()
-                print "Start the Server ",server.getName()
-                start(server.getName(),server.getType())
-            except:
-                print "Failed restarting managed server ", server.getName()
-                dumpStack()
+        try:
+            print "Start the Server ",server.getName()
+            start(server.getName(),server.getType())
+        except:
+            print "Failed restarting managed server ", server.getName()
+            dumpStack()
 
 serverConfig()
 disconnect()
