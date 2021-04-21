@@ -333,11 +333,9 @@ function restartManagedServers() {
 connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
 servers=cmo.getServers()
 domainRuntime()
-print "Restart the servers which are in RUNNING status"
+print "Restart the server"
 for server in servers:
     if(server.getName() == '${managedServerVMName}' ):
-        bean="/ServerLifeCycleRuntimes/"+server.getName()
-        serverbean=getMBean(bean)
         try:
             print "Stop the Server ",server.getName()
             shutdown(server.getName(),server.getType(),ignoreSessions='true',force='true')
