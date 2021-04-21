@@ -327,30 +327,44 @@ function restartNodeManagerService()
      sudo systemctl start wls_nodemanager
 }
 
-function restartManagedServer()
-{
-    echo "Restart managed server"
-    cat <<EOF >${SCRIPT_PWD}/restart-managedServer.py
-
+function restartManagedServers() {
+    echo "Restart managed servers"
+    cat <<EOF >${SCRIPT_PATH}/restart-managedServer.py
 connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
-cd('/')
+servers=cmo.getServers()
+domainRuntime()
+print "Restart the servers which are in RUNNING status"
+for server in servers:
+    if(server.getName() == '${managedServerVMName}' ):
+        bean="/ServerLifeCycleRuntimes/"+server.getName()
+        serverbean=getMBean(bean)
+        if (serverbean.getState() in ("RUNNING")):
+            try:
+                print "Stop the Server ",server.getName()
+                shutdown(server.getName(),server.getType(),ignoreSessions='true',force='true')
+                print "Start the Server ",server.getName()
+                start(server.getName(),server.getType())
+            except:
+                print "Failed restarting managed server ", server.getName()
+                dumpStack()
 
-servers = cmo.getServers()
-for s in servers:
-    name = s.getName()
-    if name != 'AdminServer':
-        ref = getMBean('/Servers/'+name+'/Machine/$managedServerVMName')
-        if ref != None:
-            shutdown(name,'Server')
-        start(name,'Server')
+        if (serverbean.getState() in ("SHUTDOWN")):
+            try:
+                print "Server is already shutdown ",server.getName()
+                print "Start the Server ",server.getName()
+                start(server.getName(),server.getType())
+            except:
+                print "Failed restarting managed server ", server.getName()
+                dumpStack()
 
+serverConfig()
 disconnect()
 EOF
-    . $oracleHome/oracle_common/common/bin/setWlstEnv.sh
-    java $WLST_ARGS weblogic.WLST ${SCRIPT_PWD}/restart-managedServer.py 
+    sudo chown -R ${userOracle}:${groupOracle} ${SCRIPT_PATH}
+    runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST ${SCRIPT_PATH}/restart-managedServer.py"
 
     if [[ $? != 0 ]]; then
-        echo "Error : Fail to restart managed server."
+        echo "Error : Fail to restart managed server to sync up elk configuration."
         exit 1
     fi
 }
@@ -461,7 +475,7 @@ else
     configureNodeManagerSSL
     restartNodeManagerService
     wait_for_admin
-    restartManagedServer
+    restartManagedServers
 fi
 
 cleanup
