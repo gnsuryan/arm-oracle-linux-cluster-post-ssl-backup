@@ -74,12 +74,15 @@
             "description": "The number of existing application managed servers."
          }
       },
-      "isCoherenceEnabled": {
-            "defaultValue": false,
-            "type": "bool",
-            "metadata": {
-                "description": "boolean flag indicating if Coherence cluster enabled or not."
-            }
+      "coherenceCacheSettings": {
+         "type": "object",
+         "defaultValue": {
+            "enable": false,
+            "numberOfCoherenceCacheInstances": 0
+         },
+         "metadata": {
+            "description": "If enable is true, must specify the numberOfCoherenceCacheInstances"
+         }
       },
       "customSSLSettings": {
          "type": "object",
@@ -148,7 +151,7 @@
                ]
             },
             "protectedSettings": {
-				"commandToExecute": "[concat('sh',' ',variables('name_scriptFile'),' ',parameters('adminVMName'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',variables('const_wlsHome'),' ',variables('const_wlsDomainPath'),' ',variables('const_managedVMPrefix'), copyIndex(),' ',parameters('managedServerPrefix'),' ',parameters('numberOfExistingNodes'),' ',parameters('isCoherenceEnabled'),' ',copyIndex(),' ',parameters('aadsSettings').enable,' ',if(parameters('aadsSettings').enable, parameters('aadsSettings').certificateBase64String, 'null'),' ', parameters('customSSLSettings').enable,' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStoreBase64String, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStorePassPhrase, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStoreType, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStoreBase64String, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStorePassPhrase, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStoreType, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').privateKeyAlias, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').privateKeyPassPhrase, 'null'))]"            }
+				"commandToExecute": "[concat('sh',' ',variables('name_scriptFile'),' ',parameters('adminVMName'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',variables('const_wlsHome'),' ',variables('const_wlsDomainPath'),' ',variables('const_managedVMPrefix'), copyIndex(),' ',parameters('managedServerPrefix'),' ',parameters('numberOfExistingNodes'),' ',parameters('coherenceCacheSettings').enable,' ',if(parameters('coherenceCacheSettings').enable,parameters('coherenceCacheSettings').numberOfCoherenceCacheInstances),0),' ',copyIndex(),' ',parameters('aadsSettings').enable,' ',if(parameters('aadsSettings').enable, parameters('aadsSettings').certificateBase64String, 'null'),' ', parameters('customSSLSettings').enable,' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStoreBase64String, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStorePassPhrase, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStoreType, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStoreBase64String, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStorePassPhrase, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStoreType, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').privateKeyAlias, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').privateKeyPassPhrase, 'null'))]"            }
          }
       },
       {

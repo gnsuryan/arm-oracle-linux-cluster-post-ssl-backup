@@ -10,29 +10,7 @@ function echo_stderr ()
 #Function to display usage message
 function usage()
 {
-  echo_stderr "./configureCustomAdminSSL.sh <adminVMName> <wlsDomainName> <wlsUserName> <wlsPassword> <oracleHome> <wlsDomainPath> <managedServerVMName> <managedServerPrefix> <numberOfExistingNodes> <isCoherenceEnabled> <vmIndex> <enableAAD> <wlsADSSLCer> <isCustomSSLenabled> <customIdentityKeyStoreBase64String> <customIdentityKeyStorePassPhrase> <customIdentityKeyStoreType> <customTrustKeyStoreBase64String> <customTrustKeyStorePassPhrase> <customTrustKeyStoreType> <privateKeyAlias> <privateKeyPassPhrase>"
-}
-
-function installUtilities()
-{
-    echo "Installing zip unzip wget vnc-server rng-tools cifs-utils"
-    sudo yum install -y zip unzip wget vnc-server rng-tools cifs-utils
-
-    #Setting up rngd utils
-    attempt=1
-    while [[ $attempt -lt 4 ]]
-    do
-       echo "Starting rngd service attempt $attempt"
-       sudo systemctl start rngd
-       attempt=`expr $attempt + 1`
-       sudo systemctl status rngd | grep running
-       if [[ $? == 0 ]]; 
-       then
-          echo "rngd utility service started successfully"
-          break
-       fi
-       sleep 1m
-    done  
+  echo_stderr "./configureCustomAdminSSL.sh <adminVMName> <wlsDomainName> <wlsUserName> <wlsPassword> <oracleHome> <wlsDomainPath> <managedServerVMName> <managedServerPrefix> <numberOfExistingNodes> <isCoherenceEnabled> <numberOfCoherenceCacheInstances> <vmIndex> <enableAAD> <wlsADSSLCer> <isCustomSSLenabled> <customIdentityKeyStoreBase64String> <customIdentityKeyStorePassPhrase> <customIdentityKeyStoreType> <customTrustKeyStoreBase64String> <customTrustKeyStorePassPhrase> <customTrustKeyStoreType> <privateKeyAlias> <privateKeyPassPhrase>"
 }
 
 function validateInput()
@@ -88,6 +66,11 @@ function validateInput()
     if [[ -z "$isCoherenceEnabled" ]];
     then
         echo_stderr "wlsADSSLCer is required. "
+    fi
+
+        if [[ -z "$numberOfCoherenceCacheInstances" ]];
+    then
+        echo_stderr "numberOfCoherenceCacheInstances is required. "
     fi
 
     if [ "$isCustomSSLEnabled" == "true" ];
@@ -359,7 +342,7 @@ for s in servers:
         ref = getMBean('/Servers/'+name+'/Machine/$managedServerVMName')
         if ref != None:
             shutdown(name,'Server')
-            start(name,'Server')
+        start(name,'Server')
 
 disconnect()
 EOF
@@ -387,7 +370,7 @@ for (( i=0;i<$ELEMENTS;i++)); do
     echo "ARG[${args[${i}]}]"
 done
 
-if [ $# -lt 14 ]
+if [ $# -lt 15 ]
 then
     usage
     exit 1
@@ -410,7 +393,9 @@ export numberOfExistingNodes="${9}"
 export isCoherenceEnabled="${10}"
 isCoherenceEnabled="${isCoherenceEnabled,,}"
 
-export vmIndex="${11}"
+export numberOfCoherenceCacheInstances="${11}"
+
+export vmIndex="${12}"
 
 if [ $vmIndex == 0 ];
 then
@@ -421,24 +406,24 @@ fi
 
 echo "ServerName: $wlsServerName"
 
-export enableAAD="${12}"
+export enableAAD="${13}"
 enableAAD="${enableAAD,,}"
 
-export wlsADSSLCer="${13}"
+export wlsADSSLCer="${14}"
 
-export isCustomSSLEnabled="${14}"
+export isCustomSSLEnabled="${15}"
 isCustomSSLEnabled="${isCustomSSLEnabled,,}"
 
 if [ "${isCustomSSLEnabled,,}" == "true" ];
 then
-    export customIdentityKeyStoreBase64String="${15}"
-    export customIdentityKeyStorePassPhrase="${16}"
-    export customIdentityKeyStoreType="${17}"
-    export customTrustKeyStoreBase64String="${18}"
-    export customTrustKeyStorePassPhrase="${19}"
-    export customTrustKeyStoreType="${20}"
-    export privateKeyAlias="${21}"
-    export privateKeyPassPhrase="${22}"
+    export customIdentityKeyStoreBase64String="${16}"
+    export customIdentityKeyStorePassPhrase="${17}"
+    export customIdentityKeyStoreType="${18}"
+    export customTrustKeyStoreBase64String="${19}"
+    export customTrustKeyStorePassPhrase="${20}"
+    export customTrustKeyStoreType="${21}"
+    export privateKeyAlias="${22}"
+    export privateKeyPassPhrase="${23}"
 fi
 
 export wlsAdminPort=7001
