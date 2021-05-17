@@ -96,6 +96,7 @@ function cleanup()
     rm -rf $wlsDomainPath/weblogic-deploy.zip
     rm -rf $wlsDomainPath/weblogic-deploy
     rm -rf $wlsDomainPath/*.py
+    rm -rf ${SCRIPT_PATH}
     echo "Cleanup completed."
 }
 
@@ -197,7 +198,7 @@ else
     do
       echo "."
       count=$((count+1))
-      if [ $count -le 30 ];
+      if [ $count -le 10 ];
       then
           sleep 1m
       else
@@ -503,6 +504,9 @@ export groupname="oracle"
 export restartAttempt=0
 
 export KEYSTORE_PATH="$wlsDomainPath/$wlsDomainName/keystores"
+export SCRIPT_PATH="/u01/app/scripts"
+
+mkdir -p $SCRIPT_PATH
 
 validateInput
 cleanup
@@ -523,6 +527,7 @@ then
     wait_for_admin
 else
     #wait for 5 minutes so that admin server would have got configured with SSL and started.
+    echo "Waiting for 5 mins for the admin server to get configured first and get started"
     sleep 5m
     wait_for_admin
     configureSSL
