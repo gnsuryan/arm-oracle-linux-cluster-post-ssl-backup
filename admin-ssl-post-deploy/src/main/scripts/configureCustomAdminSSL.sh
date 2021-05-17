@@ -176,6 +176,47 @@ do
 done  
 }
 
+
+#This function to wait for managed server
+function wait_for_managed_server()
+{
+ #wait for managed server to start completely
+sleep 5m
+
+count=1
+export CHECK_URL="http://$managedServerVMName:$wlsManagedServerPort/weblogic/ready"
+status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
+echo "Waiting for admin server to start"
+while [[ "$status" != "200" ]]
+do
+  echo "."
+  count=$((count+1))
+  if [ $count -le 30 ];
+  then
+      sleep 1m
+  else
+        echo "Error : Maximum attempts exceeded while starting managed server"
+        if [ restartAttempt == 0 ];
+            restartAttempt=1;
+            count=1
+            restartManagedServer
+            sleep 5m
+         else
+            echo "Failed to reach server $wlsServerName even after maximum attemps"
+            exit 1
+         fi
+     fi
+  fi
+  status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
+  if [ "$status" == "200" ];
+  then
+     echo "Server $wlsServerName started succesfully..."
+     break
+  fi
+done
+}
+
+
 # shutdown admin server
 function shutdown_admin() {
     #check admin server status
@@ -327,8 +368,8 @@ function restartNodeManagerService()
      sudo systemctl start wls_nodemanager
 }
 
-function restartManagedServers() {
-    echo "Restart managed servers"
+function restartManagedServer() {
+    echo "Restart managed server"
     cat <<EOF >${SCRIPT_PATH}/restart-managedServer.py
 connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
 servers=cmo.getServers()
@@ -436,10 +477,12 @@ fi
 export wlsAdminPort=7001
 export wlsAdminSSLPort=7002
 export wlsAdminChannelPort=7005
+export wlsManagedServerPort=8001
 export wlsAdminURL="$adminVMName:$wlsAdminChannelPort"
 
 export username="oracle"
 export groupname="oracle"
+export restartAttempt=0
 
 export KEYSTORE_PATH="$wlsDomainPath/$wlsDomainName/keystores"
 
@@ -468,7 +511,8 @@ else
     configureNodeManagerSSL
     restartNodeManagerService
     wait_for_admin
-    restartManagedServers
+    restartManagedServer
+    wait_for_managed_server
 fi
 
 cleanup
