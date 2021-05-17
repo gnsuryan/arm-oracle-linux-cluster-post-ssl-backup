@@ -370,12 +370,20 @@ function configureNodeManagerSSL()
 
 function restartNodeManagerService()
 {
-     echo "Restart NodeManager service"
-     sudo systemctl stop wls_nodemanager
+     echo "Restart NodeManager - first killing nodemanager process so that it gets restarted by the nodemanager service automatically"
      #kill nodemanager process if not already stopped by nodemanager service
-     ps -ef|grep 'weblogic.NodeManager'|awk '{ print $2; }'|xargs kill -9
-     sudo systemctl start wls_nodemanager
-     sleep 5m
+     ps -ef|grep 'weblogic.NodeManager'|awk '{ print $2; }'|head -n 1 | xargs kill -9
+
+     sleep 1m
+     echo "listing nodemanager process"
+     ps -ef|grep 'weblogic.NodeManager'|grep -i 'weblogic.nodemanager.JavaHome'
+     if [ "$?" == "0" ];
+     then
+       echo "NodeManager re-started successfully"
+     else
+       echo "Failed to restart NodeManager"
+       exit 1
+     fi
 }
 
 function restartManagedServer() {
