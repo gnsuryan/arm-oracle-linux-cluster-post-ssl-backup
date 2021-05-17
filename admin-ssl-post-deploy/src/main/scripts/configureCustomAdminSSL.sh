@@ -372,6 +372,8 @@ function restartNodeManagerService()
 {
      echo "Restart NodeManager service"
      sudo systemctl stop wls_nodemanager
+     #kill nodemanager process if not already stopped by nodemanager service
+     ps -ef|grep 'weblogic.NodeManager'|awk '{ print $2; }'|xargs kill -9
      sudo systemctl start wls_nodemanager
      sleep 5m
 }
