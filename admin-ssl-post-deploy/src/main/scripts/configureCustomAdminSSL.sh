@@ -197,6 +197,7 @@ do
   else
         echo "Error : Maximum attempts exceeded while starting managed server"
         if [ restartAttempt == 0 ];
+        then
             restartAttempt=1;
             count=1
             restartManagedServer
