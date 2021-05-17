@@ -96,7 +96,7 @@ function cleanup()
     rm -rf $wlsDomainPath/weblogic-deploy.zip
     rm -rf $wlsDomainPath/weblogic-deploy
     rm -rf $wlsDomainPath/*.py
-    rm -rf ${SCRIPT_PATH}
+    rm -rf ${SCRIPT_PATH}/*
     echo "Cleanup completed."
 }
 
@@ -413,7 +413,6 @@ for server in servers:
 serverConfig()
 disconnect()
 EOF
-    sudo chown -R ${userOracle}:${groupOracle} ${SCRIPT_PATH}
     runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST ${SCRIPT_PATH}/restart-managedServer.py"
 
     if [[ $? != 0 ]]; then
@@ -506,7 +505,8 @@ export restartAttempt=0
 export KEYSTORE_PATH="$wlsDomainPath/$wlsDomainName/keystores"
 export SCRIPT_PATH="/u01/app/scripts"
 
-mkdir -p $SCRIPT_PATH
+mkdir -p ${SCRIPT_PATH}
+sudo chown -R ${userOracle}:${groupOracle} ${SCRIPT_PATH}
 
 validateInput
 cleanup
