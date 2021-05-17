@@ -186,34 +186,41 @@ sleep 5m
 count=1
 export CHECK_URL="http://$managedServerVMName:$wlsManagedServerPort/weblogic/ready"
 status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
-echo "Waiting for admin server to start"
-while [[ "$status" != "200" ]]
-do
-  echo "."
-  count=$((count+1))
-  if [ $count -le 30 ];
-  then
-      sleep 1m
-  else
-        echo "Error : Maximum attempts exceeded while starting managed server"
-        if [ "$restartAttempt" == "0" ];
-        then
-            restartAttempt=1;
-            count=1
-            restartManagedServer
-            sleep 5m
-         else
-            echo "Failed to reach server $wlsServerName even after maximum attemps"
-            exit 1
-         fi
-  fi
-  status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
-  if [ "$status" == "200" ];
-  then
-     echo "Server $wlsServerName started succesfully..."
-     break
-  fi
-done
+echo "Waiting for managed server $wlsServerName to start"
+
+if [ "$status" == "200" ];
+then
+    echo "Server $wlsServerName started succesfully..."
+    break
+else
+    while [[ "$status" != "200" ]]
+    do
+      echo "."
+      count=$((count+1))
+      if [ $count -le 30 ];
+      then
+          sleep 1m
+      else
+            echo "Error : Maximum attempts exceeded while starting managed server"
+            if [ "$restartAttempt" == "0" ];
+            then
+                restartAttempt=1;
+                count=1
+                restartManagedServer
+                sleep 5m
+             else
+                echo "Failed to reach server $wlsServerName even after maximum attemps"
+                exit 1
+             fi
+      fi
+      status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
+      if [ "$status" == "200" ];
+      then
+         echo "Server $wlsServerName started succesfully..."
+         break
+      fi
+    done
+fi
 }
 
 
@@ -366,6 +373,7 @@ function restartNodeManagerService()
      echo "Restart NodeManager service"
      sudo systemctl stop wls_nodemanager
      sudo systemctl start wls_nodemanager
+     sleep 5m
 }
 
 function restartManagedServer() {
