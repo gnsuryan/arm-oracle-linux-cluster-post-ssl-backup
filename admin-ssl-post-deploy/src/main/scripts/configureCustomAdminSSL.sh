@@ -196,7 +196,7 @@ do
       sleep 1m
   else
         echo "Error : Maximum attempts exceeded while starting managed server"
-        if [ restartAttempt == 0 ];
+        if [ "$restartAttempt" == "0" ];
         then
             restartAttempt=1;
             count=1
@@ -206,7 +206,6 @@ do
             echo "Failed to reach server $wlsServerName even after maximum attemps"
             exit 1
          fi
-     fi
   fi
   status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
   if [ "$status" == "200" ];
