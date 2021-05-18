@@ -229,7 +229,7 @@ fi
 function shutdown_admin() {
     #check admin server status
     count=1
-    export CHECK_URL="https://$adminVMName:$wlsAdminSSLPort/weblogic/ready"
+    export CHECK_URL="http://$adminVMName:$wlsAdminPort/weblogic/ready"
     status=$(curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'})
     echo "Check admin server status: $status"
     while [[ "$status" == "200" ]]; do
