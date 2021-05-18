@@ -538,4 +538,4 @@ else
     wait_for_managed_server
 fi
 
-cleanup
+#cleanup
