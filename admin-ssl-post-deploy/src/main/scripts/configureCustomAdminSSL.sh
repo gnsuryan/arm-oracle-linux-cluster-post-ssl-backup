@@ -207,7 +207,7 @@ else
             then
                 restartAttempt=1;
                 count=1
-                restartManagedServer
+                startManagedServer
                 sleep 1m
              else
                 echo "Failed to reach server $wlsServerName even after maximum attemps"
@@ -398,22 +398,15 @@ function restartNodeManagerService()
      fi
 }
 
-function restartManagedServer() {
-    echo "Restart managed server"
-    cat <<EOF >${SCRIPT_PATH}/restart-managedServer.py
+function startManagedServer()
+{
+    echo "Start managed server"
+    cat <<EOF >${SCRIPT_PATH}/start-managedServer.py
 connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
 servers=cmo.getServers()
 domainRuntime()
-print "Restart the server"
 for server in servers:
     if(server.getName() == '${managedServerVMName}' ):
-        try:
-            print "Stop the Server ",server.getName()
-            shutdown(server.getName(),server.getType(),ignoreSessions='true',force='true')
-        except:
-            print "Failed to stop the  managed server ", server.getName()
-            dumpStack()
-
         try:
             print "Start the Server ",server.getName()
             start(server.getName(),server.getType())
@@ -424,13 +417,40 @@ for server in servers:
 serverConfig()
 disconnect()
 EOF
-    runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST ${SCRIPT_PATH}/restart-managedServer.py"
+    runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST ${SCRIPT_PATH}/start-managedServer.py"
 
     if [[ $? != 0 ]]; then
         echo "Error : Fail to restart managed server to sync up elk configuration."
         exit 1
     fi
 }
+
+function shutdownManagedServer()
+{
+    echo "shutting down managed server"
+    cat <<EOF >${SCRIPT_PATH}/shutdown-managedServer.py
+connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
+servers=cmo.getServers()
+domainRuntime()
+for server in servers:
+    if(server.getName() == '${managedServerVMName}' ):
+        try:
+            print "shutdown the Server ",server.getName()
+            shutdown(server.getName(),server.getType(),ignoreSessions='true',force='true')
+        except:
+            print "Failed to shutdown the  managed server ", server.getName()
+            dumpStack()
+
+disconnect()
+EOF
+    runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST ${SCRIPT_PATH}/shutdown-managedServer.py"
+
+    if [[ $? != 0 ]]; then
+        echo "Error : Fail to restart managed server to sync up elk configuration."
+        exit 1
+    fi
+}
+
 
 #main script starts here
 
@@ -541,11 +561,12 @@ else
     echo "Waiting for 5 mins for the admin server to get configured first and get started"
     sleep 5m
     wait_for_admin
+    shutdownManagedServer
     configureSSL
     configureNodeManagerSSL
     restartNodeManagerService
     wait_for_admin
-    restartManagedServer
+    startManagedServer
     wait_for_managed_server
 fi
 
