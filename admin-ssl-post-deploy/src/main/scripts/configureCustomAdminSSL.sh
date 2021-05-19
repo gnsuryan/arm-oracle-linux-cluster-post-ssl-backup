@@ -154,7 +154,7 @@ function wait_for_admin()
 {
  #wait for admin to start
 count=1
-export CHECK_URL="https://$adminVMName:$wlsAdminSSLPort/weblogic/ready"
+export CHECK_URL="http://$adminVMName:$wlsAdminChannelPort/weblogic/ready"
 status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
 echo "Waiting for admin server to start"
 while [[ "$status" != "200" ]]
@@ -229,18 +229,21 @@ fi
 function shutdown_admin() {
     #check admin server status
     count=1
-    export CHECK_URL="http://$adminVMName:$wlsAdminPort/weblogic/ready"
+    export CHECK_URL="http://$adminVMName:$wlsAdminChannelPort/weblogic/ready"
     status=$(curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'})
     echo "Check admin server status: $status"
     while [[ "$status" == "200" ]]; do
         echo "stopping admin server . $count"
         count=$((count + 1))
         sudo systemctl stop wls_admin
+        sleep 30s
+        sudo systemctl status wls_admin
         result=$?
 
         #force kill admin server, if not able to stop using system service
         if [ "$result" != "0" ];
         then
+             echo "force killing admin server as stop using system service failed"
              ps -ef|grep weblogic|grep "weblogic.Name=admin" | awk '{ print $2; }' | head -n 1 | xargs kill -9
         fi
 
@@ -251,7 +254,7 @@ function shutdown_admin() {
             echo "WebLogic Server is stopped..."
             break
         fi
-        if [ $count -le 10 ]; then
+        if [ $count -le 5 ]; then
             sleep 1m
         else
             echo "Error : Maximum attempts exceeded while stopping admin server"
