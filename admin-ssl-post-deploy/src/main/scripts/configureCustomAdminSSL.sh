@@ -208,7 +208,7 @@ else
                 restartAttempt=1;
                 count=1
                 restartManagedServer
-                sleep 5m
+                sleep 1m
              else
                 echo "Failed to reach server $wlsServerName even after maximum attemps"
                 exit 1
