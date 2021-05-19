@@ -104,7 +104,7 @@ function cleanup()
 function configureSSL()
 {
     echo "Configuring SSL on Server: $wlsServerName"
-    cat <<EOF >$wlsDomainPath/configureSSL.py
+    cat <<EOF >${SCRIPT_PATH}/configureSSL.py
 
 isCustomSSLEnabled='${isCustomSSLEnabled}'
 
@@ -138,10 +138,10 @@ destroyEditSession("$wlsServerName")
 disconnect()
 EOF
 
-sudo chown -R $username:$groupname $wlsDomainPath/configureSSL.py
+sudo chown -R $username:$groupname ${SCRIPT_PATH}/configureSSL.py
 
 echo "Running wlst script to configure SSL on $wlsServerName"
-runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST $wlsDomainPath/configureSSL.py"
+runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST ${SCRIPT_PATH}/configureSSL.py"
 if [[ $? != 0 ]]; then
      echo "Error : SSL Configuration for server $wlsServerName failed"
      exit 1
@@ -417,10 +417,11 @@ for server in servers:
 serverConfig()
 disconnect()
 EOF
+    sudo chown -R ${userOracle}:${groupOracle} ${SCRIPT_PATH}
     runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST ${SCRIPT_PATH}/start-managedServer.py"
 
     if [[ $? != 0 ]]; then
-        echo "Error : Fail to restart managed server to sync up elk configuration."
+        echo "Error : Fail to restart managed server"
         exit 1
     fi
 }
@@ -443,10 +444,11 @@ for server in servers:
 
 disconnect()
 EOF
+    sudo chown -R ${userOracle}:${groupOracle} ${SCRIPT_PATH}
     runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST ${SCRIPT_PATH}/shutdown-managedServer.py"
 
     if [[ $? != 0 ]]; then
-        echo "Error : Fail to restart managed server to sync up elk configuration."
+        echo "Error : Failed to shutdown all managed servers."
         exit 1
     fi
 }
