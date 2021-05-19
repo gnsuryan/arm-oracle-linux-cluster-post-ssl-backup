@@ -425,15 +425,15 @@ EOF
     fi
 }
 
-function shutdownManagedServer()
+function shutdownAllManagedServers()
 {
-    echo "shutting down managed server"
+    echo "shutting down all managed servers"
     cat <<EOF >${SCRIPT_PATH}/shutdown-managedServer.py
 connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
 servers=cmo.getServers()
 domainRuntime()
 for server in servers:
-    if(server.getName() == '${managedServerVMName}' ):
+    if( server.getName().find('${managedServerPrefix}') != -1 ):
         try:
             print "shutdown the Server ",server.getName()
             shutdown(server.getName(),server.getType(),ignoreSessions='true',force='true')
@@ -551,17 +551,17 @@ then
         parseLDAPCertificate
         importAADCertificateIntoWLSCustomTrustKeyStore
     fi
-    
+
     wait_for_admin
+    shutdownAllManagedServers
     configureSSL
     restartAdminServerService
     wait_for_admin
 else
-    #wait for 5 minutes so that admin server would have got configured with SSL and started.
-    echo "Waiting for 5 mins for the admin server to get configured first and get started"
-    sleep 5m
+    #wait for 10 minutes so that admin server would have got configured with SSL and started.
+    echo "Waiting for 10 mins for the admin server to get configured first and get started"
+    sleep 10m
     wait_for_admin
-    shutdownManagedServer
     configureSSL
     configureNodeManagerSSL
     restartNodeManagerService
