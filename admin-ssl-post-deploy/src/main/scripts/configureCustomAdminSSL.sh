@@ -236,16 +236,26 @@ function shutdown_admin() {
         echo "stopping admin server . $count"
         count=$((count + 1))
         sudo systemctl stop wls_admin
+        result=$?
+
+        #force kill admin server, if not able to stop using system service
+        if [ "$result" != "0" ];
+        then
+             ps -ef|grep weblogic|grep "weblogic.Name=admin" | awk '{ print $2; }' | head -n 1 | xargs kill -9
+        fi
+
+        sleep 30s
+        status=$(curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'})
+
+        if [ "${status}" != "200" ]; then
+            echo "WebLogic Server is stopped..."
+            break
+        fi
         if [ $count -le 10 ]; then
-            sleep 3m
+            sleep 1m
         else
             echo "Error : Maximum attempts exceeded while stopping admin server"
             exit 1
-        fi
-        status=$(curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'})
-        if [ -z ${status} ]; then
-            echo "WebLogic Server is stop..."
-            break
         fi
     done
 }
