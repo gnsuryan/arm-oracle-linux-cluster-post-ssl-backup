@@ -417,7 +417,7 @@ for server in servers:
 serverConfig()
 disconnect()
 EOF
-    sudo chown -R ${userOracle}:${groupOracle} ${SCRIPT_PATH}
+    sudo chown -R ${username}:${groupname} ${SCRIPT_PATH}
     runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST ${SCRIPT_PATH}/start-managedServer.py"
 
     if [[ $? != 0 ]]; then
@@ -444,7 +444,7 @@ for server in servers:
 
 disconnect()
 EOF
-    sudo chown -R ${userOracle}:${groupOracle} ${SCRIPT_PATH}
+    sudo chown -R ${username}:${groupname} ${SCRIPT_PATH}
     runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST ${SCRIPT_PATH}/shutdown-managedServer.py"
 
     if [[ $? != 0 ]]; then
@@ -539,7 +539,7 @@ export KEYSTORE_PATH="$wlsDomainPath/$wlsDomainName/keystores"
 export SCRIPT_PATH="/u01/app/scripts"
 
 mkdir -p ${SCRIPT_PATH}
-sudo chown -R ${userOracle}:${groupOracle} ${SCRIPT_PATH}
+sudo chown -R ${username}:${groupname} ${SCRIPT_PATH}
 
 validateInput
 cleanup
