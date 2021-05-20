@@ -181,9 +181,6 @@ done
 #This function to wait for managed server
 function wait_for_managed_server()
 {
- #wait for managed server to start completely
-sleep 5m
-
 count=1
 export CHECK_URL="http://$managedServerVMName:$wlsManagedServerPort/weblogic/ready"
 status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
@@ -202,17 +199,8 @@ else
       then
           sleep 1m
       else
-            echo "Error : Maximum attempts exceeded while starting managed server"
-            if [ "$restartAttempt" == "0" ];
-            then
-                restartAttempt=1;
-                count=1
-                startManagedServer
-                sleep 1m
-             else
-                echo "Failed to reach server $wlsServerName even after maximum attemps"
-                exit 1
-             fi
+            echo "Failed to reach server $wlsServerName even after maximum attemps"
+            exit 1
       fi
       status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
       if [ "$status" == "200" ];
@@ -560,9 +548,9 @@ then
     restartAdminServerService
     wait_for_admin
 else
-    #wait for 10 minutes so that admin server would have got configured with SSL and started.
-    echo "Waiting for 10 mins for the admin server to get configured first and get started"
-    sleep 10m
+    #wait for 5 minutes so that admin server would have got configured with SSL and started.
+    echo "Waiting for 5 mins for the admin server to get configured first and get started"
+    sleep 5m
     wait_for_admin
     configureSSL
     configureNodeManagerSSL
