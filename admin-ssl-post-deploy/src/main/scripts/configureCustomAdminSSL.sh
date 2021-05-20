@@ -406,7 +406,7 @@ connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
 servers=cmo.getServers()
 domainRuntime()
 for server in servers:
-    if(server.getName() == '${managedServerVMName}' ):
+    if( server.getName() == '${wlsServerName}' ):
         try:
             print "Start the Server ",server.getName()
             start(server.getName(),server.getType())
