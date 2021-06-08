@@ -166,7 +166,7 @@
       {
          "type": "Microsoft.Compute/virtualMachines/extensions",
          "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),'/newuserscript'),concat(variables('const_managedVMPrefix'), copyIndex(),'/newuserscript'))]",
-         "condition": "[parameters('customSSLSettings.enable'))]",
+         "condition": "[parameters('customSSLSettings.enable')]",
          "apiVersion": "2020-06-01",
          "location": "[parameters('location')]",
          "copy": {
@@ -196,7 +196,7 @@
       {
          "type": "Microsoft.Compute/virtualMachines/extensions",
          "name": "[concat(parameters('adminVMName'),'/newuserscript')]",
-         "condition": "[parameters('customSSLSettings.enable'))]",
+         "condition": "[parameters('customSSLSettings.enable')]",
          "apiVersion": "2020-06-01",
          "location": "[parameters('location')]",
          "dependsOn": [
