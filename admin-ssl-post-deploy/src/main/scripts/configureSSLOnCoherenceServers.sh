@@ -337,7 +337,7 @@ if [ $vmIndex == 0 ];
 then
     wlsServerName="admin"
 else
-    wlsServerName="$managedServerPrefix$vmIndex"
+    wlsServerName="$coherenceServerPrefix$vmIndex"
 fi
 
 echo "ServerName: $wlsServerName"

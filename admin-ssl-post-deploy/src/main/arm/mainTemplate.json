@@ -142,7 +142,7 @@
          "location": "[parameters('location')]",
          "copy": {
                 "name": "coherenceVMExtensionLoop",
-                "count": "[add(parameters('coherenceCacheSettings').numberOfCoherenceCacheInstances,1)]"
+                "count": "[add(parameters('coherenceCacheSettings').numberOfCoherenceCacheInstances)]"
          },
          "properties": {
             "publisher": "Microsoft.Azure.Extensions",
@@ -167,7 +167,7 @@
          "location": "[parameters('location')]",
          "copy": {
                 "name": "managedVMExtensionLoop",
-                "count": "[add(parameters('numberOfExistingNodes'),1)]"
+                "count": "[add(parameters('numberOfExistingNodes'))]"
          },
          "dependsOn": [
                "coherenceVMExtensionLoop"
