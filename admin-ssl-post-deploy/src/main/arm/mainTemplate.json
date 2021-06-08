@@ -144,10 +144,6 @@
                 "name": "coherenceVMExtensionLoop",
                 "count": "[add(parameters('coherenceCacheSettings').numberOfCoherenceCacheInstances,1)]"
          },
-         "dependsOn": [
-               "[resourceId('Microsoft.Compute/virtualMachines/', concat(parameters('adminVMName')))]",
-               "[resourceId('Microsoft.Compute/virtualMachines/', concat(variables('const_coherenceVMPrefix'), copyIndex()))]"
-         ],
          "properties": {
             "publisher": "Microsoft.Azure.Extensions",
             "type": "CustomScript",
@@ -174,8 +170,6 @@
                 "count": "[add(parameters('numberOfExistingNodes'),1)]"
          },
          "dependsOn": [
-               "[resourceId('Microsoft.Compute/virtualMachines/', concat(parameters('adminVMName')))]",
-               "[resourceId('Microsoft.Compute/virtualMachines/', concat(variables('const_managedVMPrefix'), copyIndex()))]",
                "coherenceVMExtensionLoop"
          ],
          "properties": {
@@ -200,7 +194,6 @@
          "apiVersion": "2020-06-01",
          "location": "[parameters('location')]",
          "dependsOn": [
-               "[resourceId('Microsoft.Compute/virtualMachines/', concat(parameters('adminVMName')))]",
                "coherenceVMExtensionLoop",
                "managedVMExtensionLoop"
          ],
