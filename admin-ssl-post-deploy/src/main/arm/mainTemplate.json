@@ -137,7 +137,7 @@
       {
          "type": "Microsoft.Compute/virtualMachines/extensions",
          "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),'/newuserscript'),concat(variables('const_coherenceVMPrefix'), copyIndex(),'/newuserscript'))]",
-         "condition": "[and(parameters('coherenceCacheSettings').enable,parameters('customSSLSettings').enable))]",
+         "condition": "[and(parameters('coherenceCacheSettings').enable,parameters('customSSLSettings').enable)]",
          "apiVersion": "2020-06-01",
          "location": "[parameters('location')]",
          "copy": {
