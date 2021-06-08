@@ -226,7 +226,7 @@
          "dependsOn": [
             "coherenceVMExtensionLoop",
             "managedVMExtensionLoop",
-            "[concat('Microsoft.Compute/virtualMachines/', parameters('adminVMName'),'/', 'newuserscript')]"
+            "[concat('Microsoft.Compute/virtualMachines/extensions', parameters('adminVMName'),'/', 'newuserscript')]"
          ],
          "properties": {
             "mode": "Incremental",
