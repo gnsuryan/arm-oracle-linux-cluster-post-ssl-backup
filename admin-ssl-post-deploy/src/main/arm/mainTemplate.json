@@ -141,7 +141,7 @@
          "apiVersion": "2020-06-01",
          "location": "[parameters('location')]",
          "copy": {
-                "name": "CoherenceVMExtensionLoop",
+                "name": "coherenceVMExtensionLoop",
                 "count": "[add(parameters('numberOfCoherenceCacheInstances'),1)]"
          },
          "dependsOn": [
@@ -176,7 +176,7 @@
          "dependsOn": [
                "[resourceId('Microsoft.Compute/virtualMachines/', concat(parameters('adminVMName')))]",
                "[resourceId('Microsoft.Compute/virtualMachines/', concat(variables('const_managedVMPrefix'), copyIndex()))]",
-               CoherenceVMExtensionLoop
+               "coherenceVMExtensionLoop"
          ],
          "properties": {
             "publisher": "Microsoft.Azure.Extensions",
@@ -201,8 +201,8 @@
          "location": "[parameters('location')]",
          "dependsOn": [
                "[resourceId('Microsoft.Compute/virtualMachines/', concat(parameters('adminVMName')))]",
-               CoherenceVMExtensionLoop,
-               managedVMExtensionLoop
+               "coherenceVMExtensionLoop",
+               "managedVMExtensionLoop"
          ],
          "properties": {
             "publisher": "Microsoft.Azure.Extensions",
