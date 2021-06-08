@@ -136,7 +136,7 @@
       },
       {
          "type": "Microsoft.Compute/virtualMachines/extensions",
-         "name": "[concat(variables('const_coherenceVMPrefix'), copyIndex(1),'/newuserscript'))]",
+         "name": "[concat(variables('const_coherenceVMPrefix'), copyIndex(1),'/newuserscript')]",
          "condition": "[and(parameters('coherenceCacheSettings').enable,parameters('customSSLSettings').enable)]",
          "apiVersion": "2020-06-01",
          "location": "[parameters('location')]",
@@ -165,7 +165,7 @@
       },
       {
          "type": "Microsoft.Compute/virtualMachines/extensions",
-         "name": "[concat(variables('const_managedVMPrefix'), copyIndex(1),'/newuserscript'))]",
+         "name": "[concat(variables('const_managedVMPrefix'), copyIndex(1),'/newuserscript')]",
          "condition": "[parameters('customSSLSettings').enable]",
          "apiVersion": "2020-06-01",
          "location": "[parameters('location')]",
