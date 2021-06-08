@@ -112,9 +112,13 @@
    "variables": {
       "const_hyphen": "-",
       "const_managedVMPrefix": "[concat(parameters('managedServerPrefix'),'VM')]",
+      "const_coherenceVMPrefix": "[concat(parameters('managedServerPrefix'),'StorageVM')]",
+      "const_coherenceServerPrefix": "[concat(parameters('managedServerPrefix'),'Storage')]",
       "const_wlsHome": "/u01/app/wls/install/oracle/middleware/oracle_home",
       "const_wlsDomainPath": "/u01/domains",
-      "name_scriptFile": "configureCustomAdminSSL.sh"
+      "name_coherenceServerConfigScriptFile": "configureSSLOnCoherenceServers.sh",
+      "name_managedServerConfigScriptFile": "configureSSLOnManagedServers.sh",
+      "name_adminServerConfigScriptFile": "configureSSLOnAdminServer.sh"
    },
    "resources": [
       {
@@ -132,13 +136,18 @@
       },
       {
          "type": "Microsoft.Compute/virtualMachines/extensions",
-         "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),'/newuserscript'),concat(variables('const_managedVMPrefix'), copyIndex(),'/newuserscript'))]",
+         "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),'/newuserscript'),concat(variables('const_coherenceVMPrefix'), copyIndex(),'/newuserscript'))]",
+         "condition": "[and(parameters('coherenceCacheSettings.enable'),parameters('customSSLSettings.enable'))]",
          "apiVersion": "2020-06-01",
          "location": "[parameters('location')]",
          "copy": {
-                "name": "virtualMachineExtensionLoop",
-                "count": "[add(parameters('numberOfExistingNodes'),1)]"
+                "name": "CoherenceVMExtensionLoop",
+                "count": "[add(parameters('numberOfCoherenceCacheInstances'),1)]"
          },
+         "dependsOn": [
+               "[resourceId('Microsoft.Compute/virtualMachines/', concat(parameters('adminVMName')))]",
+               "[resourceId('Microsoft.Compute/virtualMachines/', concat(variables('const_coherenceVMPrefix'), copyIndex()))]"
+         ],
          "properties": {
             "publisher": "Microsoft.Azure.Extensions",
             "type": "CustomScript",
@@ -147,11 +156,67 @@
             "settings": {
                "timestamp": "[int(parameters('deploy_timestamp'))]",
                "fileUris": [
-                  "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('name_scriptFile'), parameters('_artifactsLocationSasToken')))]"
+                  "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('name_coherenceServerConfigScriptFile'), parameters('_artifactsLocationSasToken')))]"
                ]
             },
             "protectedSettings": {
-				"commandToExecute": "[concat('sh',' ',variables('name_scriptFile'),' ',parameters('adminVMName'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',variables('const_wlsHome'),' ',variables('const_wlsDomainPath'),' ',variables('const_managedVMPrefix'), copyIndex(),' ',parameters('managedServerPrefix'),' ',parameters('numberOfExistingNodes'),' ',parameters('coherenceCacheSettings').enable,' ',if(parameters('coherenceCacheSettings').enable,parameters('coherenceCacheSettings').numberOfCoherenceCacheInstances,0),' ',copyIndex(),' ',parameters('aadsSettings').enable,' ',if(parameters('aadsSettings').enable, parameters('aadsSettings').certificateBase64String, 'null'),' ', parameters('customSSLSettings').enable,' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStoreBase64String, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStorePassPhrase, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStoreType, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStoreBase64String, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStorePassPhrase, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStoreType, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').privateKeyAlias, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').privateKeyPassPhrase, 'null'))]"            }
+				"commandToExecute": "[concat('sh',' ',variables('name_coherenceServerConfigScriptFile'),' ',parameters('adminVMName'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',variables('const_wlsHome'),' ',variables('const_wlsDomainPath'),' ',variables('const_coherenceVMPrefix'), copyIndex(),' ',variables('const_coherenceServerPrefix'),' ',parameters('coherenceCacheSettings').enable,' ',if(parameters('coherenceCacheSettings').enable,parameters('coherenceCacheSettings').numberOfCoherenceCacheInstances,0),' ',copyIndex(),' ', parameters('customSSLSettings').enable,' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStoreBase64String, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStorePassPhrase, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStoreType, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStoreBase64String, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStorePassPhrase, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStoreType, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').privateKeyAlias, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').privateKeyPassPhrase, 'null'))]"            }
+         }
+      },
+      {
+         "type": "Microsoft.Compute/virtualMachines/extensions",
+         "name": "[if(equals(copyIndex(),0),concat(parameters('adminVMName'),'/newuserscript'),concat(variables('const_managedVMPrefix'), copyIndex(),'/newuserscript'))]",
+         "condition": "[parameters('customSSLSettings.enable'))]",
+         "apiVersion": "2020-06-01",
+         "location": "[parameters('location')]",
+         "copy": {
+                "name": "managedVMExtensionLoop",
+                "count": "[add(parameters('numberOfExistingNodes'),1)]"
+         },
+         "dependsOn": [
+               "[resourceId('Microsoft.Compute/virtualMachines/', concat(parameters('adminVMName')))]",
+               "[resourceId('Microsoft.Compute/virtualMachines/', concat(variables('const_managedVMPrefix'), copyIndex()))]",
+               CoherenceVMExtensionLoop
+         ],
+         "properties": {
+            "publisher": "Microsoft.Azure.Extensions",
+            "type": "CustomScript",
+            "typeHandlerVersion": "2.1",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+               "timestamp": "[int(parameters('deploy_timestamp'))]",
+               "fileUris": [
+                  "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('name_managedServerConfigScriptFile'), parameters('_artifactsLocationSasToken')))]"
+               ]
+            },
+            "protectedSettings": {
+				"commandToExecute": "[concat('sh',' ',variables('name_managedServerConfigScriptFile'),' ',parameters('adminVMName'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',variables('const_wlsHome'),' ',variables('const_wlsDomainPath'),' ',variables('const_managedVMPrefix'), copyIndex(),' ',parameters('managedServerPrefix'),' ',parameters('numberOfExistingNodes'),' ',parameters('coherenceCacheSettings').enable,' ',if(parameters('coherenceCacheSettings').enable,parameters('coherenceCacheSettings').numberOfCoherenceCacheInstances,0),' ',copyIndex(),' ',parameters('aadsSettings').enable,' ',if(parameters('aadsSettings').enable, parameters('aadsSettings').certificateBase64String, 'null'),' ', parameters('customSSLSettings').enable,' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStoreBase64String, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStorePassPhrase, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStoreType, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStoreBase64String, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStorePassPhrase, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStoreType, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').privateKeyAlias, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').privateKeyPassPhrase, 'null'))]"            }
+         }
+      },
+      {
+         "type": "Microsoft.Compute/virtualMachines/extensions",
+         "name": "[concat(parameters('adminVMName'),'/newuserscript')]",
+         "condition": "[parameters('customSSLSettings.enable'))]",
+         "apiVersion": "2020-06-01",
+         "location": "[parameters('location')]",
+         "dependsOn": [
+               "[resourceId('Microsoft.Compute/virtualMachines/', concat(parameters('adminVMName')))]",
+               CoherenceVMExtensionLoop,
+               managedVMExtensionLoop
+         ],
+         "properties": {
+            "publisher": "Microsoft.Azure.Extensions",
+            "type": "CustomScript",
+            "typeHandlerVersion": "2.1",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+               "timestamp": "[int(parameters('deploy_timestamp'))]",
+               "fileUris": [
+                  "[uri(parameters('_artifactsLocation'), concat('scripts/', variables('name_adminServerConfigScriptFile'), parameters('_artifactsLocationSasToken')))]"
+               ]
+            },
+            "protectedSettings": {
+				"commandToExecute": "[concat('sh',' ',variables('name_adminServerConfigScriptFile'),' ',parameters('adminVMName'),' ',parameters('wlsDomainName'),' ',parameters('wlsUserName'),' ',parameters('wlsPassword'),' ',variables('const_wlsHome'),' ',variables('const_wlsDomainPath'),' ',variables('const_managedVMPrefix'),' ',parameters('numberOfExistingNodes'),' ',parameters('coherenceCacheSettings').enable,' ',if(parameters('coherenceCacheSettings').enable,parameters('coherenceCacheSettings').numberOfCoherenceCacheInstances,0),' ',copyIndex(),' ',parameters('aadsSettings').enable,' ',if(parameters('aadsSettings').enable, parameters('aadsSettings').certificateBase64String, 'null'),' ', parameters('customSSLSettings').enable,' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStoreBase64String, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStorePassPhrase, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customIdentityKeyStoreType, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStoreBase64String, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStorePassPhrase, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').customTrustKeyStoreType, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').privateKeyAlias, 'null'),' ',if(parameters('customSSLSettings').enable,parameters('customSSLSettings').privateKeyPassPhrase, 'null'))]"            }
          }
       },
       {
@@ -159,7 +224,9 @@
          "apiVersion": "2020-06-01",
          "name": "post.deploy.ssl.config.end",
          "dependsOn": [
-            "virtualMachineExtensionLoop"
+            "coherenceVMExtensionLoop",
+            "managedVMExtensionLoop",
+            "[concat('Microsoft.Compute/virtualMachines/', parameters('adminVMName'),'/', 'newuserscript')]"
          ],
          "properties": {
             "mode": "Incremental",
