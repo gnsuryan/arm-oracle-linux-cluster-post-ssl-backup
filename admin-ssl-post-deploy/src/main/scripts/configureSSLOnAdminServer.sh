@@ -152,24 +152,31 @@ echo "Waiting for admin server to start"
 count=1
 export CHECK_URL="http://$adminVMName:$wlsAdminChannelPort/weblogic/ready"
 status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
-while [[ "$status" != "200" ]]
-do
-  echo "admin server still not reachable at $CHECK_URL .. $count"
-  count=$((count+1))
-  if [ $count -le 10 ];
-  then
-      sleep 1m
-  else
-     echo "Error : Maximum attempts exceeded while starting admin server"
-     exit 1
-  fi
-  status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
-  if [ "$status" == "200" ];
-  then
-     echo "Server $wlsServerName started succesfully..."
-     break
-  fi
-done  
+
+if [ "$status" == "200" ];
+then
+    echo "Server admin started succesfully..."
+    return
+else
+    while [[ "$status" != "200" ]]
+    do
+      echo "admin server still not reachable at $CHECK_URL .. $count"
+      count=$((count+1))
+      if [ $count -le 10 ];
+      then
+          sleep 1m
+      else
+         echo "Error : Maximum attempts exceeded while starting admin server"
+         exit 1
+      fi
+      status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
+      if [ "$status" == "200" ];
+      then
+         echo "Server $wlsServerName started succesfully..."
+         break
+      fi
+    done
+fi
 }
 
 
@@ -186,7 +193,7 @@ status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print 
 if [ "$status" == "200" ];
 then
     echo "Server $serverName started succesfully..."
-    break
+    return
 else
     while [[ "$status" != "200" ]]
     do
@@ -194,7 +201,7 @@ else
       count=$((count+1))
       if [ $count -le 10 ];
       then
-          sleep 1m
+          sleep 2m
       else
             echo "Failed to reach server $serverName even after maximum attempts"
             exit 1
@@ -217,7 +224,7 @@ function validate_managed_servers()
     do
       managedServerVMName="${managedServerPrefix}VM${i}"
       serverName="${managedServerPrefix}${i}"
-      readyURL=http://$managedServerVMName:$wlsManagedServerPort/weblogic/ready
+      readyURL="http://$managedServerVMName:$wlsManagedServerPort/weblogic/ready"
       wait_for_server $readyURL $serverName
       i=$((i+1))
     done
@@ -471,7 +478,11 @@ then
     configureSSL
     force_restart_admin
     restart_domain_with_rolling_restart
+    echo "wait for 5 minutes for rolling restart to take effect"
+    sleep 5m
     wait_for_admin
+    echo "wait for 10 more minutes for rolling restart to complete"
+    sleep 10m
     validate_managed_servers
 
     if [ "$isCoherenceEnabled" == "true" ]; 
