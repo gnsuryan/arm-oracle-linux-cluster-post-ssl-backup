@@ -154,7 +154,7 @@ export CHECK_URL="http://$adminVMName:$wlsAdminChannelPort/weblogic/ready"
 status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
 while [[ "$status" != "200" ]]
 do
-  echo "admin server still not reachable .. $count"
+  echo "admin server still not reachable at $CHECK_URL .. $count"
   count=$((count+1))
   if [ $count -le 10 ];
   then
@@ -176,12 +176,12 @@ done
 #This function to wait for managed/coherence server to start
 function wait_for_server()
 {
+echo "Waiting for managed server $serverName to start"
 count=1
 export CHECK_URL="$1"
 export serverName="$2"
 echo "verifying if $serverName is available by verifying URL: $CHECK_URL"
 status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
-echo "Waiting for managed server $serverName to start"
 
 if [ "$status" == "200" ];
 then
@@ -190,7 +190,7 @@ then
 else
     while [[ "$status" != "200" ]]
     do
-      echo "managed/coherence server: $serverName - still not reachable .. $count"
+      echo "managed/coherence server: $serverName - still not reachable at $CHECK_URL .. $count"
       count=$((count+1))
       if [ $count -le 10 ];
       then
@@ -212,13 +212,13 @@ fi
 function validate_managed_servers()
 {
     i=1
-    while [ $i -le $numberOfExistingNodes ]
+    while [[ $i -le $numberOfExistingNodes ]]
     do
       managedServerVMName="${managedServerPrefix}VM${i}"
       serverName="${managedServerPrefix}${i}"
       readyURL=http://$managedServerVMName:$wlsManagedServerPort/weblogic/ready
       wait_for_server $readyURL $serverName
-      (( i++ ))
+      i=$((i+1))
     done
     
     echo "All Managed Servers started successfully"   
@@ -227,24 +227,25 @@ function validate_managed_servers()
 function validate_coherence_servers()
 {
     i=1
-    while [ $i -le $numberOfCoherenceCacheInstances ]
+    while [[ $i -le $numberOfCoherenceCacheInstances ]]
     do
       coherenceServerVMName="${coherenceServerPrefix}VM${i}"
       serverName="${coherenceServerPrefix}${i}"
-      readyURL=http://$managedServerVMName:$wlsCoherenceServerPort/weblogic/ready
+      readyURL=http://$coherenceServerVMName:$wlsCoherenceServerPort/weblogic/ready
       wait_for_server $readyURL $serverName
-      (( i++ ))
+      i=$((i+1))
     done
     
     echo "All Coherence Servers started successfully"   
 }
 
-# restart domain using rolling restart
+# restart servers using rolling restart
 function restart_domain_with_rolling_restart() 
 {
 
 echo "Restarting Domain using Rolling Restart WLST function"
 cat <<EOF >${SCRIPT_PATH}/rolling_restart.py
+
 try:
     connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
     rollingRestart('$wlsDomainName')
@@ -262,6 +263,16 @@ if [[ $? != 0 ]]; then
      exit 1
 fi
   
+}
+
+function force_restart_admin()
+{
+     echo "Force Restart AdminServer - first killing admin server process so that it gets restarted by the wls_admin service automatically"
+     ps -ef|grep 'weblogic.Server'|grep 'weblogic.Name=admin' |awk '{ print $2; }'|head -n 1 | xargs kill -9
+     sleep 5m
+     echo "listing admin server process"
+     ps -ef|grep 'weblogic.Server'|grep -i 'weblogic.Name=admin'
+     wait_for_admin
 }
 
 function parseLDAPCertificate()
@@ -456,9 +467,9 @@ then
     fi
     wait_for_admin
     configureSSL
+    wait_for_admin
+    force_restart_admin
     restart_domain_with_rolling_restart
-    echo "waiting for admin server to start after rolling restart of domain"
-    sleep 5m
     wait_for_admin
     validate_managed_servers
 
