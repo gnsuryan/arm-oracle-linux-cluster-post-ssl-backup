@@ -211,6 +211,7 @@ fi
 
 function validate_managed_servers()
 {
+    echo "validate managed servers: $numberOfExistingNodes"
     i=1
     while [[ $i -le $numberOfExistingNodes ]]
     do
@@ -226,14 +227,15 @@ function validate_managed_servers()
 
 function validate_coherence_servers()
 {
-    i=1
-    while [[ $i -le $numberOfCoherenceCacheInstances ]]
+    echo "validate coherence servers: $numberOfCoherenceCacheInstances"
+    j=1
+    while [[ $j -le $numberOfCoherenceCacheInstances ]]
     do
-      coherenceServerVMName="${coherenceServerPrefix}VM${i}"
-      serverName="${coherenceServerPrefix}${i}"
+      coherenceServerVMName="${coherenceServerPrefix}VM${j}"
+      serverName="${coherenceServerPrefix}${j}"
       readyURL=http://$coherenceServerVMName:$wlsCoherenceServerPort/weblogic/ready
       wait_for_server $readyURL $serverName
-      i=$((i+1))
+      j=$((j+1))
     done
     
     echo "All Coherence Servers started successfully"   
@@ -467,7 +469,6 @@ then
     fi
     wait_for_admin
     configureSSL
-    wait_for_admin
     force_restart_admin
     restart_domain_with_rolling_restart
     wait_for_admin
