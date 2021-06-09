@@ -245,10 +245,12 @@ function restart_domain_with_rolling_restart()
 
 echo "Restarting Domain using Rolling Restart WLST function"
 cat <<EOF >${SCRIPT_PATH}/rolling_restart.py
-
-connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
-rollingRestart('$wlsDomainName')
-disconnect()
+try:
+    connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
+    rollingRestart('$wlsDomainName')
+    disconnect()
+except Exception, e:
+    print e
 EOF
 
 sudo chown -R $username:$groupname ${SCRIPT_PATH}/rolling_restart.py
@@ -467,9 +469,7 @@ then
     
     cleanup
 else
-    #wait for 5 minutes so that admin server would have got configured with SSL and started.
     echo "This script is used only for configuring custom SSL on WebLogic Administration Server, post deployment"
-    
 fi
 
 
