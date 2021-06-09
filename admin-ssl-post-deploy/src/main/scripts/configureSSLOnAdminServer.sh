@@ -147,16 +147,16 @@ fi
 #This function to wait for admin server 
 function wait_for_admin()
 {
+echo "Waiting for admin server to start"
  #wait for admin to start
 count=1
 export CHECK_URL="http://$adminVMName:$wlsAdminChannelPort/weblogic/ready"
 status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
-echo "Waiting for admin server to start"
 while [[ "$status" != "200" ]]
 do
-  echo "."
+  echo "admin server still not reachable .. $count"
   count=$((count+1))
-  if [ $count -le 30 ];
+  if [ $count -le 10 ];
   then
       sleep 1m
   else
@@ -190,7 +190,7 @@ then
 else
     while [[ "$status" != "200" ]]
     do
-      echo "."
+      echo "managed/coherence server: $serverName - still not reachable .. $count"
       count=$((count+1))
       if [ $count -le 10 ];
       then
@@ -247,14 +247,13 @@ echo "Restarting Domain using Rolling Restart WLST function"
 cat <<EOF >${SCRIPT_PATH}/rolling_restart.py
 
 connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
-progress = rollingRestart('$wlsDomainName')
+rollingRestart('$wlsDomainName')
 disconnect()
-progress.getProgressString()
 EOF
 
 sudo chown -R $username:$groupname ${SCRIPT_PATH}/rolling_restart.py
 
-echo "Running wlst script to kickoff rolling restart for Domain $$wlsDomainName"
+echo "Running wlst script to kickoff rolling restart for Domain $wlsDomainName"
 runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST ${SCRIPT_PATH}/rolling_restart.py"
 if [[ $? != 0 ]]; then
      echo "Error : Rolling Restart failed"
@@ -386,6 +385,7 @@ export oracleHome=$5
 export wlsDomainPath=$6
 
 export managedServerPrefix=${7}
+export coherenceServerPrefix="${managedServerPrefix}Storage"
 export numberOfExistingNodes="${8}"
 
 export isCoherenceEnabled="${9}"
@@ -455,6 +455,8 @@ then
     wait_for_admin
     configureSSL
     restart_domain_with_rolling_restart
+    echo "waiting for admin server to start after rolling restart of domain"
+    sleep 5m
     wait_for_admin
     validate_managed_servers
 
