@@ -536,9 +536,10 @@ then
 
     wait_for_admin
     configureSSL
+
     force_restart_admin
-    restart_domain_with_rolling_restart $clusterName
     restart_domain_with_rolling_restart $coherenceClusterName
+    restart_domain_with_rolling_restart $clusterName
     wait_for_admin
     validate_managed_servers
     if [ "$isCoherenceEnabled" == "true" ]; 
