@@ -252,8 +252,9 @@ function validate_coherence_servers()
 function restart_domain_with_rolling_restart() 
 {
 
-echo "Restarting Domain using Rolling Restart WLST function"
-cat <<EOF >${SCRIPT_PATH}/rolling_restart.py
+target="$1"
+echo "Restart cluster $target using Rolling Restart WLST function"
+cat <<EOF >${SCRIPT_PATH}/rolling_restart_$target.py
 
 import sys, socket
 import os
@@ -262,7 +263,7 @@ from java.util import Date
 from java.text import SimpleDateFormat
 
 ### MAIN 
-argTarget = "cluster1"
+argTarget='$target'
 
 try:
    connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
@@ -319,10 +320,10 @@ exit()
 
 EOF
 
-sudo chown -R $username:$groupname ${SCRIPT_PATH}/rolling_restart.py
+sudo chown -R $username:$groupname ${SCRIPT_PATH}/rolling_restart_$target.py
 
 echo "Running wlst script to kickoff rolling restart for Domain $wlsDomainName"
-runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST ${SCRIPT_PATH}/rolling_restart.py"
+runuser -l oracle -c ". $oracleHome/oracle_common/common/bin/setWlstEnv.sh; java $WLST_ARGS weblogic.WLST ${SCRIPT_PATH}/rolling_restart_$target.py"
 if [[ $? != 0 ]]; then
      echo "Error : Rolling Restart failed"
      exit 1
@@ -509,7 +510,9 @@ export wlsAdminURL="$adminVMName:$wlsAdminChannelPort"
 
 export username="oracle"
 export groupname="oracle"
-export restartAttempt=0
+
+export clusterName="cluster1"
+export coherenceClusterName="storage1"
 
 export KEYSTORE_PATH="$wlsDomainPath/$wlsDomainName/keystores"
 export SCRIPT_PATH="/u01/app/scripts"
@@ -534,7 +537,8 @@ then
     wait_for_admin
     configureSSL
     force_restart_admin
-    restart_domain_with_rolling_restart
+    restart_domain_with_rolling_restart $clusterName
+    restart_domain_with_rolling_restart $coherenceClusterName
     wait_for_admin
     validate_managed_servers
     if [ "$isCoherenceEnabled" == "true" ]; 
