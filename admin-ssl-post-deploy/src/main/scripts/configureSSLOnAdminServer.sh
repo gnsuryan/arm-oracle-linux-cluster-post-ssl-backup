@@ -255,12 +255,68 @@ function restart_domain_with_rolling_restart()
 echo "Restarting Domain using Rolling Restart WLST function"
 cat <<EOF >${SCRIPT_PATH}/rolling_restart.py
 
+import sys, socket
+import os
+import time
+from java.util import Date
+from java.text import SimpleDateFormat
+
+### MAIN 
+argTarget = "cluster1"
+
 try:
-    connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
-    rollingRestart('$wlsDomainName')
-    disconnect()
+   connect('$wlsUserName','$wlsPassword','t3://$wlsAdminURL')
+   progress = rollingRestart(argTarget, options='isDryRun=false,shutdownTimeout=30,isAutoRevertOnFailure=true')
+   lastProgressString = ""
+
+   progressString=progress.getProgressString()
+   steps=progressString.split('/')
+
+   while not (steps[0].strip() == steps[1].strip()):
+     if not (progressString == lastProgressString):
+       print "Completed step " + steps[0].strip() + " of " + steps[1].strip() + " total steps"
+       lastProgressString = progressString
+
+     java.lang.Thread.sleep(1000)
+
+     progressString=progress.getProgressString()
+     steps=progressString.split('/')
+     if(len(steps) == 1):
+       print steps[0]
+       break;
+
+   if(len(steps) == 2):
+     print "Completed step " + steps[0].strip() + " of " + steps[1].strip() + " total steps"
+
+   t = Date()
+   endTime=SimpleDateFormat("hh:mm:ss").format(t)
+
+   print ""
+   print "RolloutDirectory task finished at " + endTime
+   print ""
+   viewMBean(progress)
+
+   state = progress.getStatus()
+   error = progress.getError()
+   #TODO: better error handling with the progress.getError obj and msg
+   # not a string, can raise directly
+   stateString = '%s' % state   
+   if stateString != 'SUCCESS':
+     #msg = 'State is %s and error is: %s' % (state,error)
+     msg = "State is: " + state
+     raise(msg)
+   elif error is not None:
+     msg = "Error not null for state: " + state
+     print msg
+     #raise("Error not null for state: %s and error is: %s" + (state,error))
+     raise(error)  
 except Exception, e:
-    print e
+  e.printStackTrace()
+  dumpStack()
+  raise("Rollout failed")
+
+exit()
+
 EOF
 
 sudo chown -R $username:$groupname ${SCRIPT_PATH}/rolling_restart.py
@@ -474,17 +530,13 @@ then
         parseLDAPCertificate
         importAADCertificateIntoWLSCustomTrustKeyStore
     fi
+
     wait_for_admin
     configureSSL
     force_restart_admin
     restart_domain_with_rolling_restart
-    echo "wait for 5 minutes for rolling restart to take effect"
-    sleep 5m
     wait_for_admin
-    echo "wait for 10 more minutes for rolling restart to complete"
-    sleep 10m
     validate_managed_servers
-
     if [ "$isCoherenceEnabled" == "true" ]; 
     then
         validate_coherence_servers
