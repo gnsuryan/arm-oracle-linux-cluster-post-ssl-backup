@@ -144,7 +144,7 @@ fi
 
 }
 
-#This function to wait for admin server 
+#This function to wait for admin server
 function wait_for_admin()
 {
 echo "Waiting for admin server to start"
@@ -228,8 +228,8 @@ function validate_managed_servers()
       wait_for_server $readyURL $serverName
       i=$((i+1))
     done
-    
-    echo "All Managed Servers started successfully"   
+
+    echo "All Managed Servers started successfully"
 }
 
 function validate_coherence_servers()
@@ -244,12 +244,12 @@ function validate_coherence_servers()
       wait_for_server $readyURL $serverName
       j=$((j+1))
     done
-    
-    echo "All Coherence Servers started successfully"   
+
+    echo "All Coherence Servers started successfully"
 }
 
 # restart servers using rolling restart
-function restart_domain_with_rolling_restart() 
+function restart_domain_with_rolling_restart()
 {
 
 target="$1"
@@ -262,7 +262,7 @@ import time
 from java.util import Date
 from java.text import SimpleDateFormat
 
-### MAIN 
+### MAIN
 argTarget='$target'
 
 try:
@@ -301,7 +301,7 @@ try:
    error = progress.getError()
    #TODO: better error handling with the progress.getError obj and msg
    # not a string, can raise directly
-   stateString = '%s' % state   
+   stateString = '%s' % state
    if stateString != 'SUCCESS':
      #msg = 'State is %s and error is: %s' % (state,error)
      msg = "State is: " + state
@@ -310,7 +310,7 @@ try:
      msg = "Error not null for state: " + state
      print msg
      #raise("Error not null for state: %s and error is: %s" + (state,error))
-     raise(error)  
+     raise(error)
 except Exception, e:
   e.printStackTrace()
   dumpStack()
@@ -328,15 +328,20 @@ if [[ $? != 0 ]]; then
      echo "Error : Rolling Restart failed"
      exit 1
 fi
-  
+
 }
 
 function force_restart_admin()
 {
      echo "Force Restart AdminServer - first killing admin server process so that it gets restarted by the wls_admin service automatically"
+
+     echo "listing admin server process before restart"
+     ps -ef|grep 'weblogic.Server'|grep -i 'weblogic.Name=admin'
+
      ps -ef|grep 'weblogic.Server'|grep 'weblogic.Name=admin' |awk '{ print $2; }'|head -n 1 | xargs kill -9
      sleep 5m
-     echo "listing admin server process"
+
+     echo "listing admin server process after restart"
      ps -ef|grep 'weblogic.Server'|grep -i 'weblogic.Name=admin'
      wait_for_admin
 }
@@ -438,14 +443,14 @@ function parseAndSaveCustomSSLKeyStoreData()
 
 export SCRIPT_PWD=`pwd`
 
-# store arguments in a special array 
-args=("$@") 
-# get number of elements 
-ELEMENTS=${#args[@]} 
- 
-# echo each element in array  
-# for loop 
-for (( i=0;i<$ELEMENTS;i++)); do 
+# store arguments in a special array
+args=("$@")
+# get number of elements
+ELEMENTS=${#args[@]}
+
+# echo each element in array
+# for loop
+for (( i=0;i<$ELEMENTS;i++)); do
     echo "ARG[${args[${i}]}]"
 done
 
@@ -472,33 +477,28 @@ isCoherenceEnabled="${isCoherenceEnabled,,}"
 
 export numberOfCoherenceCacheInstances="${10}"
 
-export vmIndex="${11}"
-
-if [ $vmIndex == 0 ];
-then
-    wlsServerName="admin"
-fi
+export wlsServerName="admin"
 
 echo "ServerName: $wlsServerName"
 
-export enableAAD="${12}"
+export enableAAD="${11}"
 enableAAD="${enableAAD,,}"
 
-export wlsADSSLCer="${13}"
+export wlsADSSLCer="${12}"
 
-export isCustomSSLEnabled="${14}"
+export isCustomSSLEnabled="${13}"
 isCustomSSLEnabled="${isCustomSSLEnabled,,}"
 
 if [ "${isCustomSSLEnabled,,}" == "true" ];
 then
-    export customIdentityKeyStoreBase64String="${15}"
-    export customIdentityKeyStorePassPhrase="${16}"
-    export customIdentityKeyStoreType="${17}"
-    export customTrustKeyStoreBase64String="${18}"
-    export customTrustKeyStorePassPhrase="${19}"
-    export customTrustKeyStoreType="${20}"
-    export privateKeyAlias="${21}"
-    export privateKeyPassPhrase="${22}"
+    export customIdentityKeyStoreBase64String="${14}"
+    export customIdentityKeyStorePassPhrase="${15}"
+    export customIdentityKeyStoreType="${16}"
+    export customTrustKeyStoreBase64String="${17}"
+    export customTrustKeyStorePassPhrase="${18}"
+    export customTrustKeyStoreType="${19}"
+    export privateKeyAlias="${20}"
+    export privateKeyPassPhrase="${21}"
 fi
 
 export wlsAdminPort=7001
@@ -521,35 +521,27 @@ mkdir -p ${SCRIPT_PATH}
 sudo chown -R ${username}:${groupname} ${SCRIPT_PATH}
 
 
-#if vmIndex is 0, the script is running on admin server, else on managed server
-if [ $vmIndex == 0 ];
+validateInput
+cleanup
+parseAndSaveCustomSSLKeyStoreData
+
+if [ "$enableAAD" == "true" ];
 then
-    validateInput
-    cleanup
-    parseAndSaveCustomSSLKeyStoreData
-
-    if [ "$enableAAD" == "true" ];
-    then
-        parseLDAPCertificate
-        importAADCertificateIntoWLSCustomTrustKeyStore
-    fi
-
-    wait_for_admin
-    configureSSL
-
-    force_restart_admin
-    restart_domain_with_rolling_restart $coherenceClusterName
-    restart_domain_with_rolling_restart $clusterName
-    wait_for_admin
-    validate_managed_servers
-    if [ "$isCoherenceEnabled" == "true" ]; 
-    then
-        validate_coherence_servers
-    fi
-    
-    cleanup
-else
-    echo "This script is used only for configuring custom SSL on WebLogic Administration Server, post deployment"
+    parseLDAPCertificate
+    importAADCertificateIntoWLSCustomTrustKeyStore
 fi
 
+wait_for_admin
+configureSSL
 
+force_restart_admin
+restart_domain_with_rolling_restart $coherenceClusterName
+restart_domain_with_rolling_restart $clusterName
+wait_for_admin
+validate_managed_servers
+if [ "$isCoherenceEnabled" == "true" ];
+then
+    validate_coherence_servers
+fi
+
+cleanup

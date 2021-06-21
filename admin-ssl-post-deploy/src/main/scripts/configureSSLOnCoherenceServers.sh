@@ -40,14 +40,6 @@ function validateInput()
         echo_stderr "wlsDomainPath is required. "
     fi
 
-    if [[ "$enableAAD" == "true" ]];
-    then
-        if [[ -z "$wlsADSSLCer" ]]
-        then
-            echo_stderr "wlsADSSLCer is required. "
-        fi
-    fi
-
     if [[ -z "$coherenceServerVMName" ]];
     then
         echo_stderr "coherenceServerVMName is required. "
@@ -144,7 +136,7 @@ fi
 
 }
 
-#This function to wait for admin server 
+#This function to wait for admin server
 function wait_for_admin()
 {
  #wait for admin to start
@@ -169,7 +161,7 @@ do
      echo "Server $wlsServerName started succesfully..."
      break
   fi
-done  
+done
 }
 
 
@@ -258,11 +250,22 @@ function parseAndSaveCustomSSLKeyStoreData()
 
 function configureNodeManagerSSL()
 {
- 
+
     echo "configuring NodeManagerSSL at $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties"
- 
+
     if [ "${isCustomSSLEnabled}" == "true" ];
     then
+
+        sed -i '/KeyStores=/d' $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+        sed -i '/CustomIdentityKeystoreType=/d' $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+        sed -i '/CustomIdentityKeyStoreFileName=/d' $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+        sed -i '/CustomIdentityKeyStorePassPhrase=/d' $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+        sed -i '/CustomIdentityAlias=/d' $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+        sed -i '/CustomIdentityPrivateKeyPassPhrase=/d' $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+        sed -i '/CustomTrustKeystoreType=/d' $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+        sed -i '/CustomTrustKeyStoreFileName=/d' $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+        sed -i '/CustomTrustKeyStorePassPhrase=/d' $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
+
         echo "KeyStores=CustomIdentityAndCustomTrust" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
         echo "CustomIdentityKeystoreType=${customIdentityKeyStoreType}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
         echo "CustomIdentityKeyStoreFileName=${customSSLIdentityKeyStoreFile}" >> $wlsDomainPath/$wlsDomainName/nodemanager/nodemanager.properties
@@ -278,6 +281,10 @@ function configureNodeManagerSSL()
 function restartNodeManagerService()
 {
      echo "Restart NodeManager - first killing nodemanager process so that it gets restarted by the nodemanager service automatically"
+
+     echo "listing nodemanager process before restart"
+     ps -ef|grep 'weblogic.NodeManager'|grep -i 'weblogic.nodemanager.JavaHome'
+
      #kill nodemanager process if not already stopped by nodemanager service
      ps -ef|grep 'weblogic.NodeManager'|awk '{ print $2; }'|head -n 1 | xargs kill -9
 
@@ -297,14 +304,14 @@ function restartNodeManagerService()
 
 export SCRIPT_PWD=`pwd`
 
-# store arguments in a special array 
-args=("$@") 
-# get number of elements 
-ELEMENTS=${#args[@]} 
- 
-# echo each element in array  
-# for loop 
-for (( i=0;i<$ELEMENTS;i++)); do 
+# store arguments in a special array
+args=("$@")
+# get number of elements
+ELEMENTS=${#args[@]}
+
+# echo each element in array
+# for loop
+for (( i=0;i<$ELEMENTS;i++)); do
     echo "ARG[${args[${i}]}]"
 done
 
@@ -373,18 +380,11 @@ export SCRIPT_PATH="/u01/app/scripts"
 mkdir -p ${SCRIPT_PATH}
 sudo chown -R ${username}:${groupname} ${SCRIPT_PATH}
 
-#if vmIndex is 0, the script is running on admin server, else on coherence/managed server
-if [ $vmIndex == 0 ];
-then
-    echo "This script is configured to run only on coherence VM. So, exiting the script as it is running on Admin Server VM"
-    exit 0
-else
-    validateInput
-    cleanup
-    parseAndSaveCustomSSLKeyStoreData
-    wait_for_admin
-    configureSSL
-    configureNodeManagerSSL
-    restartNodeManagerService
-    cleanup
-fi
+validateInput
+cleanup
+parseAndSaveCustomSSLKeyStoreData
+wait_for_admin
+configureSSL
+configureNodeManagerSSL
+restartNodeManagerService
+cleanup
