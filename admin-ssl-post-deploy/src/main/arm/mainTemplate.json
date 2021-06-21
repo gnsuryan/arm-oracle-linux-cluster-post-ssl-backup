@@ -295,7 +295,7 @@
          "dependsOn": [
             "[resourceId('Microsoft.Resources/deployments', 'configureSSLForCoherenceServerTemplate')]",
             "[resourceId('Microsoft.Resources/deployments', 'configureSSLForManagedServersTemplate')]",
-            "[resourceId('Microsoft.Resources/deployments', 'configureSSLForAdminServerTemplate')]",
+            "[resourceId('Microsoft.Resources/deployments', 'configureSSLForAdminServerTemplate')]"
          ],
          "properties": {
             "mode": "Incremental",
