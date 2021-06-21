@@ -141,7 +141,7 @@
          "location": "[parameters('location')]",
          "copy": {
                 "name": "managedVMExtensionLoop",
-                "count": "[add(parameters('numberOfExistingNodes'),1)]"
+                "count": "[parameters('numberOfExistingNodes')]"
          },
          "properties": {
             "publisher": "Microsoft.Azure.Extensions",
