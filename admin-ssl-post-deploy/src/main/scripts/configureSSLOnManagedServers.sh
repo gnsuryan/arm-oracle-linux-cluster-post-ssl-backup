@@ -110,7 +110,7 @@ if isCustomSSLEnabled == 'true' :
     cmo.setHostnameVerificationIgnored(true)
 
 cd('/Servers/$wlsServerName/ServerStart/$wlsServerName')
-arguments = '-Dweblogic.Name=$wlsServerName  -Dweblogic.security.SSL.ignoreHostnameVerification=true'
+arguments = '-Dweblogic.Name=$wlsServerName  -Dweblogic.security.SSL.ignoreHostnameVerification=true -Djavax.net.debug=ssl,handshake'
 cmo.setArguments(arguments)
 
 save()
