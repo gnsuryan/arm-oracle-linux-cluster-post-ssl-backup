@@ -365,7 +365,7 @@ export wlsAdminURL="$adminVMName:$wlsAdminChannelPort"
 export coherenceLocalport=42000
 export coherenceLocalportAdjust=42200
 export coherenceDebugSettings="-Djavax.net.debug=ssl,handshake -Dcoherence.log.level=9"
-export wlsCoherenceArgs="-Dcoherence.localport=$coherenceLocalport -Dcoherence.localport.adjust=$coherenceLocalportAdjust ${coherenceDebugSettings}"
+export wlsCoherenceArgs="-Dcoherence.localport=$coherenceLocalport -Dcoherence.localport.adjust=$coherenceLocalportAdjust"
 
 export username="oracle"
 export groupname="oracle"
