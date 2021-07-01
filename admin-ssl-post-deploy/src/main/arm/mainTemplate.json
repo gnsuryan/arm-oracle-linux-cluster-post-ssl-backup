@@ -170,9 +170,6 @@
                 "managedServerPrefix": {
                     "value": "[parameters('managedServerPrefix')]"
                 },
-                "numberOfExistingNodes": {
-                    "value": "[parameters('numberOfExistingNodes')]"
-                },
                 "coherenceCacheSettings": {
                     "value": "[parameters('coherenceCacheSettings')]"
                 },
@@ -223,9 +220,6 @@
                 },
                 "numberOfExistingNodes": {
                     "value": "[parameters('numberOfExistingNodes')]"
-                },
-                "coherenceCacheSettings": {
-                    "value": "[parameters('coherenceCacheSettings')]"
                 },
                 "customSSLSettings": {
                     "value": "[parameters('customSSLSettings')]"

@@ -165,41 +165,6 @@ done
 }
 
 
-#This function to wait for managed server
-function wait_for_managed_server()
-{
-count=1
-export CHECK_URL="http://$coherenceServerVMName:$wlsCoherenceServerPort/weblogic/ready"
-status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
-echo "Waiting for managed server $wlsServerName to start"
-
-if [ "$status" == "200" ];
-then
-    echo "Server $wlsServerName started succesfully..."
-    break
-else
-    while [[ "$status" != "200" ]]
-    do
-      echo "."
-      count=$((count+1))
-      if [ $count -le 10 ];
-      then
-          sleep 1m
-      else
-            echo "Failed to reach server $wlsServerName even after maximum attemps"
-            exit 1
-      fi
-      status=`curl --insecure -ILs $CHECK_URL | tac | grep -m1 HTTP/1.1 | awk {'print $2'}`
-      if [ "$status" == "200" ];
-      then
-         echo "Server $wlsServerName started succesfully..."
-         break
-      fi
-    done
-fi
-}
-
-
 function validateSSLKeyStores()
 {
    sudo chown -R $username:$groupname $KEYSTORE_PATH
@@ -369,9 +334,10 @@ export wlsAdminSSLPort=7002
 export wlsAdminChannelPort=7005
 export wlsCoherenceServerPort=7501
 export wlsAdminURL="$adminVMName:$wlsAdminChannelPort"
+
 export coherenceLocalport=42000
 export coherenceLocalportAdjust=42200
-#export coherenceDebugSettings="-Djavax.net.debug=ssl,handshake -Dcoherence.log.level=9"
+export coherenceDebugSettings="-Djavax.net.debug=ssl,handshake -Dcoherence.log.level=9"
 export wlsCoherenceArgs="-Dcoherence.localport=$coherenceLocalport -Dcoherence.localport.adjust=$coherenceLocalportAdjust"
 
 export username="oracle"

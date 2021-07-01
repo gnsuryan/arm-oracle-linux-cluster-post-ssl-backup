@@ -23,16 +23,6 @@
             "description": "Admin Server hosting VM name."
          }
       },
-      "aadsSettings": {
-         "type": "object",
-         "defaultValue": {
-            "enable": false,
-            "certificateBase64String": "null"
-         },
-         "metadata": {
-            "description": "If enable is true, must specify the certificateBase64String, which is the based64 string of LADP client certificate that will be imported to trust store of WebLogic Server to enable SSL connection of AD provider."
-         }
-      },
       "location": {
          "type": "string",
          "defaultValue": "[resourceGroup().location]",
@@ -64,14 +54,6 @@
          "defaultValue": "msp",
          "metadata": {
             "description": "Provide managed server prefix"
-         }
-      },
-      "numberOfExistingNodes": {
-         "type": "int",
-         "minValue": 1,
-         "maxValue": 20,
-         "metadata": {
-            "description": "The number of existing application managed servers."
          }
       },
       "coherenceCacheSettings": {
