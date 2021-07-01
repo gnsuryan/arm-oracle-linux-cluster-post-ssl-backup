@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Copyright (c) 2021, Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+# Description
+# This script is to test application deployment on WebLogic cluster domain.
+
 # Verifying admin server is accessible
 isSuccess=false
 maxAttempt=5

@@ -462,7 +462,7 @@
                                 "visible": "true",
                                 "label": "The Identity KeyStore type (JKS,PKCS12)",
                                 "defaultValue": "JKS",
-                                "toolTip": "Use only letters and numbers",
+                                "toolTip": "One of the supported KeyStore types",
                                 "constraints": {
                                     "allowedValues": [
                                         {
@@ -548,7 +548,7 @@
                                 "visible": "true",
                                 "label": "The Trust KeyStore type (JKS,PKCS12)",
                                 "defaultValue": "JKS",
-                                "toolTip": "Use only letters and numbers",
+                                "toolTip": "One of the supported KeyStore types",
                                 "constraints": {
                                     "allowedValues": [
                                         {
@@ -651,7 +651,7 @@
                                 "visible": "true",
                                 "label": "The Identity KeyStore type (JKS,PKCS12)",
                                 "defaultValue": "JKS",
-                                "toolTip": "Use only letters and numbers",
+                                "toolTip": "One of the supported KeyStore types",
                                 "constraints": {
                                     "allowedValues": [{
                                             "label": "JKS",
@@ -723,7 +723,7 @@
                                 "visible": "true",
                                 "label": "The Trust KeyStore type (JKS,PKCS12)",
                                 "defaultValue": "JKS",
-                                "toolTip": "Use only letters and numbers",
+                                "toolTip": "One of the supported KeyStore types",
                                 "constraints": {
                                     "allowedValues": [{
                                             "label": "JKS",
@@ -1248,7 +1248,7 @@
                                 "constraints": {
                                     "required": "[bool(steps('section_database').enableDB)]",
                                     "regex": "^[a-z0-9A-Z/]{1,30}$",
-                                    "validationMessage": "The value must be 1-30 characters long and must only contain letters and numbers."
+                                    "validationMessage": "The value must be 1-30 characters long and must only contain letters, numbers, and slashes (/)."
                                 },
                                 "visible": true
                             },
@@ -1288,8 +1288,8 @@
                                 "toolTip": "Database Password",
                                 "constraints": {
                                     "required": "[bool(steps('section_database').enableDB)]",
-                                    "regex": "^((?=.*[0-9])(?=.*[a-z])|(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])|(?=.*[0-9])(?=.*[a-z])(?=.*[!@#$%^&*])|(?=.*[0-9])(?=.*[A-Z])(?=.*[!@#$%^&*])|(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*])).{6,128}$",
-                                    "validationMessage": "The password must contain at least 6 characters, with at least 1 uppercase letter, 1 lowercase letter and 1 number."
+                                    "regex": "^((?=.*[0-9])(?=.*[a-zA-Z!@#$%^&*])).{5,128}$",
+                                    "validationMessage": "The password must be between five and 128 characters long and have at least one number."
                                 },
                                 "options": {
                                     "hideConfirmation": false

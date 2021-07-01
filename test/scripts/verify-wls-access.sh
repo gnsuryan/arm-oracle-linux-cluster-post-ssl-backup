@@ -1,4 +1,10 @@
 #!/bin/bash
+
+# Copyright (c) 2021, Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+# Description
+# This script is to test WebLogic admin, console and managed servers access.
+
 # Verifying admin server is accessible
 adminPublicIP="$1"
 adminPort=$2

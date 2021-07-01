@@ -1,6 +1,7 @@
 #!/bin/bash
 
-#
+# Copyright (c) 2021, Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
 # Description
 #  This script is to configure custom DNS alias for Weblogic Server Administration Console and Application Gateway.
 #  It supports two scenarios:
@@ -112,7 +113,7 @@ function queryAdminIPId() {
     exit 1
   fi
 
-  export adminIPId=$(az graph query -q "Resources 
+  adminIPId=$(az graph query -q "Resources 
     | where type =~ 'microsoft.network/networkinterfaces' 
     | where id=~ '${nicId}' 
     | extend ipConfigsCount=array_length(properties.ipConfigurations) 
@@ -141,13 +142,13 @@ function queryAppgatewayAlias() {
     exit 1
   fi
 
-  export gatewayAlias=$(az network public-ip show \
+  gatewayAlias=$(az network public-ip show \
     --id ${gatewayIPId} \
     --query dnsSettings.fqdn -o tsv)
 }
 
 function generateParameterFile() {
-  export parametersPath=parameters.json
+  parametersPath=parameters.json
   cat <<EOF >${scriptDir}/${parametersPath}
 {
     "\$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
@@ -284,9 +285,9 @@ Custom DNS alias:
 
 # main script start from here
 # default value
-export enableGateWay=false
-export hasDNSZone=false
-export identity=/subscriptions/subscriptionId/resourceGroups/TestResourceGroup/providers/Microsoft.ManagedIdentity/userAssignedIdentities/TestUserIdentity1
+enableGateWay=false
+hasDNSZone=false
+identity=/subscriptions/subscriptionId/resourceGroups/TestResourceGroup/providers/Microsoft.ManagedIdentity/userAssignedIdentities/TestUserIdentity1
 
 # Transform long options to short ones
 for arg in "$@"; do

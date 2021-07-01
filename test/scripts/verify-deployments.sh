@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Copyright (c) 2021, Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+# Description
+# This scipt is to deploy the Azure deployments based on test parameters created.
+
 prefix="$1"
 location="$2"
 template="$3"

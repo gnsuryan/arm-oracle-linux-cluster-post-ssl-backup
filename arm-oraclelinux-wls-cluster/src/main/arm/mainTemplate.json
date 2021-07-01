@@ -77,7 +77,7 @@
         },
         "appGatewaySSLCertData": {
             "defaultValue": "",
-            "type": "string",
+            "type": "securestring",
             "metadata": {
                 "description": "The one-line, base64 string of the SSL certificate data."
             }
@@ -433,14 +433,14 @@
         },
         "wlsLDAPGroupBaseDN": {
             "defaultValue": "null",
-            "type": "string",
+            "type": "securestring",
             "metadata": {
                 "description": "The base distinguished name (DN) of the tree in the LDAP directory that contains groups."
             }
         },
         "wlsLDAPPrincipal": {
             "defaultValue": "null",
-            "type": "string",
+            "type": "securestring",
             "metadata": {
                 "description": "The Distinguished Name (DN) of the LDAP user that WebLogic Server should use to connect to the LDAP server."
             }
@@ -461,14 +461,14 @@
         },
         "wlsLDAPSSLCertificate": {
             "defaultValue": "null",
-            "type": "string",
+            "type": "securestring",
             "metadata": {
                 "description": "Client certificate that will be imported to trust store of SSL."
             }
         },
         "wlsLDAPUserBaseDN": {
             "defaultValue": "null",
-            "type": "string",
+            "type": "securestring",
             "metadata": {
                 "description": "The base distinguished name (DN) of the tree in the LDAP directory that contains users."
             }
@@ -571,7 +571,7 @@
            "defaultValue": "ServerPrivateKeyPassPhraseSecret"
         },
         "uploadedCustomIdentityKeyStoreData": {
-            "type": "string",
+            "type": "securestring",
             "metadata": {
                 "description": "Custom Identity KeyStore Data"
             },
@@ -592,7 +592,7 @@
             "defaultValue": "JKS"
         },
         "uploadedCustomTrustKeyStoreData": {
-            "type": "string",
+            "type": "securestring",
             "metadata": {
                 "description": "Custom Trust KeyStore Data"
             },

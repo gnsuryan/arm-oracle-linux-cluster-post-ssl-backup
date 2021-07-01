@@ -1,5 +1,9 @@
 #!/bin/bash
-#Generate parameters with value for deploying db template independently
+
+# Copyright (c) 2021, Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+# Description
+# Generate parameters with value for deploying db template independently
 
 parametersPath=$1
 adminVMName=$2

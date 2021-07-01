@@ -1,3 +1,9 @@
+# Copyright (c) 2021, Oracle and/or its affiliates.
+# Licensed under the Universal Permissive License v 1.0 as shown at https://oss.oracle.com/licenses/upl.
+# Description
+# This script is to test system services created on Azure VM.
+
+
 # Verify the service using systemctl status
 function verifyServiceStatus()
 {
@@ -27,7 +33,7 @@ function verifyServiceActive()
 # For admin server    : rngd wls_admin wls_nodemanager
 # For managed server  : rngd wls_nodemanager
 
-export servicesList=$*
+servicesList=$*
 
 for service in $servicesList
 do
